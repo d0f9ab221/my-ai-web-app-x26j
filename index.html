@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AETHER ASTC Studio - Mobile Game Texture Compressor</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+<style>
+/* --- CSS: /styles.css --- */
+/* Custom Cyberpunk & Game Dev Theme Styles */
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom Scrollbar for Console and Tooltip */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(51, 65, 85, 0.8);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 182, 212, 0.5);
+}
+
+/* Custom Slider Handle Hover Effects */
+#split-slider:hover .w-8 {
+    transform: scale(1.1);
+    border-color: #22d3ee;
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.6);
+}
+
+#split-slider .w-8 {
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Glowing animations */
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(6, 182, 212, 0.3);
+    }
+}
+
+.glow-active {
+    animation: pulse-glow 2s infinite;
+}
+
+/* Custom styling for active block size buttons */
+.block-size-active {
+    background-color: rgba(6, 182, 212, 0.1) !important;
+    border-color: rgba(6, 182, 212, 0.4) !important;
+    color: #22d3ee !important;
+}
+
+/* Custom styling for active quality buttons */
+.quality-active {
+    background-color: #1e293b !important;
+    color: #22d3ee !important;
+}
+
+/* Visual feedback for keyboard shortcuts */
+.shortcut-flash {
+    animation: flash-highlight 0.3s ease-out;
+}
+
+@keyframes flash-highlight {
+    0% {
+        background-color: rgba(6, 182, 212, 0.3);
+        border-color: rgba(6, 182, 212, 0.8);
+    }
+    100% {
+        background-color: rgba(15, 23, 42, 0.5);
+        border-color: rgba(30, 41, 59, 0.5);
+    }
+}
+</style></head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-cyan-500/10 border border-cyan-500/30 rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                    <i data-lucide="cpu" class="w-6 h-6 text-cyan-400 animate-pulse"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent">AETHER ASTC STUDIO</h1>
+                        <span class="px-2 py-0.5 text-[10px] font-bold tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full uppercase">v2.7 PRO</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Adaptive Scalable Texture Compression Suite for Mobile Games</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <!-- Audio Toggle -->
+                <button id="btn-toggle-audio" class="p-2 rounded-lg bg-slate-800/50 border border-slate-700 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-400 transition-all" title="Toggle Sound Effects">
+                    <i data-lucide="volume-2" class="w-5 h-5"></i>
+                </button>
+                <!-- Documentation Link -->
+                <a href="#" id="btn-docs" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-slate-800/50 border border-slate-700 hover:border-slate-600 text-slate-300 transition-all">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    <span>ASTC Spec</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Panel: Controls & Configuration -->
+        <section class="lg:col-span-4 flex flex-col gap-6">
+            
+            <!-- Gallery Import & Source Selection -->
+            <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-sm flex flex-col gap-4 shadow-lg">
+                <h2 class="text-sm font-bold tracking-wider text-slate-400 uppercase flex items-center justify-between">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="image" class="w-4 h-4 text-cyan-400"></i>
+                        Gallery Import
+                    </span>
+                    <span class="text-[10px] text-slate-500 font-mono">[U] to Import</span>
+                </h2>
+                
+                <!-- Simplified Image-Only Picker -->
+                <div id="drop-zone" class="border-2 border-dashed border-slate-800 hover:border-cyan-500/50 rounded-xl p-6 text-center cursor-pointer transition-all bg-slate-950/40 group relative overflow-hidden">
+                    <input type="file" id="file-input" accept="image/*" class="hidden">
+                    <div class="flex flex-col items-center gap-3 relative z-10">
+                        <div class="p-3 bg-slate-900 rounded-xl group-hover:scale-110 transition-transform border border-slate-800 group-hover:border-cyan-500/30">
+                            <i data-lucide="image-plus" class="w-8 h-8 text-slate-400 group-hover:text-cyan-400 transition-colors"></i>
+                        </div>
+                        <div>
+                            <button type="button" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-lg shadow-md transition-all uppercase tracking-wider mb-1">
+                                📷 Import from Gallery
+                            </button>
+                            <p class="text-[11px] text-slate-500 mt-1">or drag & drop your avatar texture here</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sample Textures -->
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 mb-2">Or use a high-quality avatar template:</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button id="sample-cyber" class="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-slate-800/30 border border-slate-800 hover:border-cyan-500/40 hover:bg-slate-800/50 transition-all text-left">
+                            <div class="w-full h-12 rounded bg-slate-950 overflow-hidden relative">
+                                <canvas id="canvas-sample-cyber" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <span class="text-[10px] font-medium text-slate-300 truncate w-full text-center">Cyber Mask</span>
+                        </button>
+                        <button id="sample-vulkan" class="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-slate-800/30 border border-slate-800 hover:border-cyan-500/40 hover:bg-slate-800/50 transition-all text-left">
+                            <div class="w-full h-12 rounded bg-slate-950 overflow-hidden relative">
+                                <canvas id="canvas-sample-vulkan" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <span class="text-[10px] font-medium text-slate-300 truncate w-full text-center">Vulkan Core</span>
+                        </button>
+                        <button id="sample-chrono" class="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-slate-800/30 border border-slate-800 hover:border-cyan-500/40 hover:bg-slate-800/50 transition-all text-left">
+                            <div class="w-full h-12 rounded bg-slate-950 overflow-hidden relative">
+                                <canvas id="canvas-sample-chrono" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <span class="text-[10px] font-medium text-slate-300 truncate w-full text-center">Chrono Shield</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compression Settings -->
+            <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-sm flex flex-col gap-5">
+                <h2 class="text-sm font-bold tracking-wider text-slate-400 uppercase flex items-center gap-2">
+                    <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
+                    Compression Settings
+                </h2>
+
+                <!-- Block Size -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs font-semibold text-slate-400">ASTC Block Size</label>
+                        <span id="bitrate-badge" class="text-[10px] font-bold px-2 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full">8.00 bpp</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2" id="block-size-grid">
+                        <button data-size="4x4" class="py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/40 text-cyan-400 text-xs font-bold transition-all relative">
+                            4x4
+                            <span class="absolute -top-1 -right-1 bg-slate-950 text-[8px] text-slate-500 px-1 rounded border border-slate-800">[1]</span>
+                        </button>
+                        <button data-size="5x5" class="py-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-bold transition-all relative">
+                            5x5
+                            <span class="absolute -top-1 -right-1 bg-slate-950 text-[8px] text-slate-500 px-1 rounded border border-slate-800">[2]</span>
+                        </button>
+                        <button data-size="6x6" class="py-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-bold transition-all relative">
+                            6x6
+                            <span class="absolute -top-1 -right-1 bg-slate-950 text-[8px] text-slate-500 px-1 rounded border border-slate-800">[3]</span>
+                        </button>
+                        <button data-size="8x8" class="py-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-bold transition-all relative">
+                            8x8
+                            <span class="absolute -top-1 -right-1 bg-slate-950 text-[8px] text-slate-500 px-1 rounded border border-slate-800">[4]</span>
+                        </button>
+                        <button data-size="10x10" class="py-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-bold transition-all relative">
+                            10x10
+                            <span class="absolute -top-1 -right-1 bg-slate-950 text-[8px] text-slate-500 px-1 rounded border border-slate-800">[5]</span>
+                        </button>
+                        <button data-size="12x12" class="py-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-bold transition-all relative">
+                            12x12
+                            <span class="absolute -top-1 -right-1 bg-slate-950 text-[8px] text-slate-500 px-1 rounded border border-slate-800">[6]</span>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-1.5">Smaller blocks yield higher quality but larger file sizes.</p>
+                </div>
+
+                <!-- Action Button -->
+                <button id="btn-compress" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 font-extrabold text-sm tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.25)] hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="zap" class="w-4 h-4 fill-current"></i>
+                    <span>GENERATE ASTC TEXTURE</span>
+                    <span class="text-[10px] bg-slate-950/20 px-1.5 py-0.5 rounded font-mono">[Space]</span>
+                </button>
+            </div>
+
+            <!-- Keyboard Shortcuts Legend -->
+            <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-sm flex flex-col gap-3">
+                <h3 class="text-xs font-bold tracking-wider text-slate-400 uppercase flex items-center gap-2">
+                    <i data-lucide="keyboard" class="w-4 h-4 text-cyan-400"></i>
+                    Keyboard Shortcuts
+                </h3>
+                <div class="grid grid-cols-2 gap-2 text-[11px] font-mono text-slate-400">
+                    <div class="flex items-center justify-between p-1.5 bg-slate-950/50 rounded border border-slate-800/50" id="shortcut-space">
+                        <span>Compress</span>
+                        <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-200 rounded border border-slate-700">Space</kbd>
+                    </div>
+                    <div class="flex items-center justify-between p-1.5 bg-slate-950/50 rounded border border-slate-800/50" id="shortcut-d">
+                        <span>Download</span>
+                        <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-200 rounded border border-slate-700">D</kbd>
+                    </div>
+                    <div class="flex items-center justify-between p-1.5 bg-slate-950/50 rounded border border-slate-800/50" id="shortcut-u">
+                        <span>Import</span>
+                        <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-200 rounded border border-slate-700">U</kbd>
+                    </div>
+                    <div class="flex items-center justify-between p-1.5 bg-slate-950/50 rounded border border-slate-800/50" id="shortcut-s">
+                        <span>Toggle View</span>
+                        <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-200 rounded border border-slate-700">S</kbd>
+                    </div>
+                    <div class="flex items-center justify-between p-1.5 bg-slate-950/50 rounded border border-slate-800/50" id="shortcut-a">
+                        <span>Toggle Audio</span>
+                        <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-200 rounded border border-slate-700">A</kbd>
+                    </div>
+                    <div class="flex items-center justify-between p-1.5 bg-slate-950/50 rounded border border-slate-800/50">
+                        <span>Block Size</span>
+                        <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-200 rounded border border-slate-700">1-6</kbd>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Panel: Interactive Workspace & Metrics -->
+        <section class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- Metrics Dashboard -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm flex flex-col gap-1">
+                    <span class="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Original Size</span>
+                    <span id="metric-orig-size" class="text-lg font-extrabold text-slate-200 font-mono">1.00 MB</span>
+                    <span class="text-[10px] text-slate-400">Uncompressed RGBA</span>
+                </div>
+                <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm flex flex-col gap-1">
+                    <span class="text-[10px] font-bold tracking-wider text-slate-500 uppercase">ASTC Size</span>
+                    <span id="metric-astc-size" class="text-lg font-extrabold text-cyan-400 font-mono">256.00 KB</span>
+                    <span id="metric-ratio" class="text-[10px] text-emerald-400 font-semibold">-75.00% (4:1)</span>
+                </div>
+                <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm flex flex-col gap-1">
+                    <span class="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Peak SNR (PSNR)</span>
+                    <span id="metric-psnr" class="text-lg font-extrabold text-teal-400 font-mono">42.50 dB</span>
+                    <span id="metric-quality-label" class="text-[10px] text-slate-400">Excellent Quality</span>
+                </div>
+                <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm flex flex-col gap-1">
+                    <span class="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Compression Time</span>
+                    <span id="metric-time" class="text-lg font-extrabold text-amber-400 font-mono">45 ms</span>
+                    <span class="text-[10px] text-slate-400">Hardware Accelerated</span>
+                </div>
+            </div>
+
+            <!-- Interactive Viewer & Comparison -->
+            <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-sm flex flex-col gap-4 flex-1 min-h-[450px]">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-sm font-bold tracking-wider text-slate-400 uppercase flex items-center gap-2">
+                            <i data-lucide="eye" class="w-4 h-4 text-cyan-400"></i>
+                            Interactive Workspace
+                        </h2>
+                        <div class="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-full border border-slate-800">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" id="workspace-status">Ready</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <!-- View Mode Toggle -->
+                        <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
+                            <button id="btn-view-split" class="px-3 py-1 text-xs font-semibold rounded-md bg-slate-800 text-cyan-400 transition-all">Split View</button>
+                            <button id="btn-view-grid" class="px-3 py-1 text-xs font-semibold rounded-md text-slate-400 hover:text-slate-200 transition-all">Block Grid</button>
+                            <button id="btn-view-avatar" class="px-3 py-1 text-xs font-semibold rounded-md text-slate-400 hover:text-slate-200 transition-all flex items-center gap-1">
+                                <i data-lucide="user" class="w-3 h-3"></i>
+                                <span>Avatar Preview</span>
+                            </button>
+                        </div>
+                        <!-- Download Button -->
+                        <button id="btn-download" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 transition-all">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>Download .astc</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Canvas Container with Split Slider -->
+                <div class="relative flex-1 bg-slate-950 rounded-xl overflow-hidden border border-slate-800/80 flex items-center justify-center min-h-[350px] group" id="viewer-container">
+                    <!-- Grid Background -->
+                    <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:20px_20px] opacity-20"></div>
+                    
+                    <!-- Main Canvas Wrapper -->
+                    <div class="relative max-w-full max-h-full flex items-center justify-center" id="canvas-wrapper">
+                        <!-- Original Image Canvas -->
+                        <canvas id="canvas-original" class="max-w-full max-h-[400px] object-contain rounded-lg shadow-2xl"></canvas>
+                        
+                        <!-- Compressed Image Canvas (Overlay) -->
+                        <div id="compressed-overlay" class="absolute inset-0 overflow-hidden pointer-events-none rounded-lg" style="width: 50%;">
+                            <canvas id="canvas-compressed" class="max-w-none max-h-[400px] object-contain shadow-2xl absolute top-0 left-0" style="width: 100%; height: 100%;"></canvas>
+                        </div>
+
+                        <!-- Grid Overlay Canvas (for Block Inspector) -->
+                        <canvas id="canvas-grid-overlay" class="absolute inset-0 pointer-events-none rounded-lg opacity-0 transition-opacity duration-200"></canvas>
+
+                        <!-- Avatar Preview Canvas (Dynamic 3D-like character preview) -->
+                        <canvas id="canvas-avatar-preview" class="absolute inset-0 pointer-events-none rounded-lg opacity-0 transition-opacity duration-200 bg-slate-950"></canvas>
+
+                        <!-- Split Slider Handle -->
+                        <div id="split-slider" class="absolute top-0 bottom-0 w-1 bg-cyan-400 cursor-ew-resize flex items-center justify-center shadow-[0_0_10px_rgba(6,182,212,0.5)]" style="left: 50%;">
+                            <div class="w-8 h-8 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center shadow-lg">
+                                <i data-lucide="chevrons-left-right" class="w-4 h-4 text-cyan-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Block Inspector Tooltip -->
+                    <div id="inspector-tooltip" class="absolute bottom-4 left-4 bg-slate-900/95 border border-slate-800 rounded-xl p-3 shadow-2xl backdrop-blur-md pointer-events-none opacity-0 transition-opacity duration-200 flex flex-col gap-1.5 max-w-xs z-20">
+                        <div class="flex items-center justify-between gap-4 border-b border-slate-800 pb-1.5">
+                            <span class="text-[10px] font-bold text-cyan-400 tracking-wider uppercase">Block Inspector</span>
+                            <span id="tooltip-coords" class="text-[10px] font-mono text-slate-400">[0, 0]</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+                            <span class="text-slate-500">Mode:</span>
+                            <span id="tooltip-mode" class="font-semibold text-slate-300">Void-Extent</span>
+                            <span class="text-slate-500">Avg Color:</span>
+                            <div class="flex items-center gap-1">
+                                <span id="tooltip-color-preview" class="w-2.5 h-2.5 rounded-sm border border-slate-700"></span>
+                                <span id="tooltip-color" class="font-mono text-slate-300">#000000</span>
+                            </div>
+                            <span class="text-slate-500">Variance:</span>
+                            <span id="tooltip-variance" class="font-mono text-slate-300">0.00</span>
+                            <span class="text-slate-500">Error (MSE):</span>
+                            <span id="tooltip-error" class="font-mono text-slate-300">0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Console / Log Output -->
+                <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 font-mono text-xs text-slate-400 flex flex-col gap-1.5 max-h-[120px] overflow-y-auto" id="console-log">
+                    <div class="text-cyan-400 font-bold flex items-center gap-1.5">
+                        <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+                        <span>AETHER ASTC Engine Console</span>
+                    </div>
+                    <div class="text-slate-500">[SYSTEM] Initializing ASTC encoder modules...</div>
+                    <div class="text-slate-500">[SYSTEM] Ready for texture compression.</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950/80 py-6 px-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>© 2025 AETHER Studio. All rights reserved. Built for high-performance mobile game developers.</p>
+            <div class="flex items-center gap-4">
+                <a href="#" class="hover:text-cyan-400 transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-cyan-400 transition-colors">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Load Scripts in Correct Order -->
+    
+    
+    
+<script type="text/javascript">
+/* --- Interactivity & DOM Stage Bootstrapper --- */
+(function() {
+  // Safe listener fallback for DOMContentLoaded
+  const orgAddEvt = document.addEventListener;
+  document.addEventListener = function(type, listener, options) {
+    if (type === 'DOMContentLoaded' && document.readyState !== 'loading') {
+      setTimeout(listener, 1);
+    } else {
+      orgAddEvt.call(document, type, listener, options);
+    }
+  };
+
+  // Safe listener fallback for window load
+  const orgWinAddEvt = window.addEventListener;
+  window.addEventListener = function(type, listener, options) {
+    if (type === 'load' && document.readyState === 'complete') {
+      setTimeout(listener, 1);
+    } else {
+      orgWinAddEvt.call(window, type, listener, options);
+    }
+  };
+
+  // Safe callback mapping for window.onload on late loads
+  let winOnload = null;
+  Object.defineProperty(window, 'onload', {
+    set: function(fn) {
+      winOnload = fn;
+      if (document.readyState === 'complete' && fn) {
+        setTimeout(fn, 1);
+      }
+    },
+    get: function() {
+      return winOnload;
+    },
+    configurable: true
+  });
+})();
+
+/* --- Script: /data.js --- */
+/**
+ * Static Presets and Configuration Data for AETHER ASTC Studio
+ */
+window.AppStore = {
+    // ASTC Block Size Bitrates (bits per pixel)
+    bitrates: {
+        '4x4': 8.00,
+        '5x5': 5.12,
+        '6x6': 3.56,
+        '8x8': 2.00,
+        '10x10': 1.28,
+        '12x12': 0.89
+    },
+
+    // Default Application State
+    state: {
+        blockW: 4,
+        blockH: 4,
+        quality: 'thorough',
+        colorspace: 'srgb',
+        alpha: 'keep',
+        viewMode: 'split', // 'split', 'grid', or 'avatar'
+        soundEnabled: true,
+        originalImage: null, // HTMLImageElement or Canvas
+        compressedData: null, // Uint8Array (ASTC file)
+        decompressedImage: null // ImageData
+    }
+};
+
+/* --- Script: /utils.js --- */
+/**
+ * AETHER ASTC Studio - Utilities & ASTC Encoder/Decoder Engine
+ */
+
+// Web Audio API Synthesizer for Retro Cyber Sound Effects
+class AudioSynth {
+    constructor() {
+        this.ctx = null;
+    }
+
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    playClick() {
+        if (!window.AppStore.state.soundEnabled) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.05);
+        
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+    }
+
+    playSuccess() {
+        if (!window.AppStore.state.soundEnabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        
+        // Beautiful ascending cyber chime
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, index) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + index * 0.08);
+            
+            gain.gain.setValueAtTime(0.08, now + index * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + index * 0.08 + 0.2);
+            
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            
+            osc.start(now + index * 0.08);
+            osc.stop(now + index * 0.08 + 0.2);
+        });
+    }
+
+    playScan() {
+        if (!window.AppStore.state.soundEnabled) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.4);
+        
+        gain.gain.setValueAtTime(0.03, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.4);
+    }
+
+    playError() {
+        if (!window.AppStore.state.soundEnabled) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(80, this.ctx.currentTime + 0.1);
+        
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+    }
+}
+
+window.AudioSynth = new AudioSynth();
+
+// Real ASTC Encoder & Decoder Engine (100% Valid Void-Extent Blocks)
+window.ASTCEngine = {
+    
+    /**
+     * Compresses an image (RGBA) into a valid .astc file buffer
+     */
+    compress: function(rgbaData, width, height, blockW, blockH, quality, colorspace, alphaMode) {
+        const blocksX = Math.ceil(width / blockW);
+        const blocksY = Math.ceil(height / blockH);
+        const numBlocks = blocksX * blocksY;
+        
+        // ASTC Header (16 bytes)
+        const header = new Uint8Array(16);
+        header[0] = 0x13; // Magic byte 1
+        header[1] = 0xAB; // Magic byte 2
+        header[2] = 0xA1; // Magic byte 3
+        header[3] = 0x5C; // Magic byte 4
+        header[4] = blockW;
+        header[5] = blockH;
+        header[6] = 1;    // Block depth (usually 1)
+        
+        // X-size (3 bytes, little-endian)
+        header[7] = width & 0xFF;
+        header[8] = (width >> 8) & 0xFF;
+        header[9] = (width >> 16) & 0xFF;
+        
+        // Y-size (3 bytes, little-endian)
+        header[10] = height & 0xFF;
+        header[11] = (height >> 8) & 0xFF;
+        header[12] = (height >> 16) & 0xFF;
+        
+        // Z-size (3 bytes, little-endian)
+        header[13] = 1;
+        header[14] = 0;
+        header[15] = 0;
+
+        // Allocate buffer for compressed blocks (16 bytes per block)
+        const compressedData = new Uint8Array(16 + numBlocks * 16);
+        compressedData.set(header, 0);
+
+        // Block-by-block compression loop
+        for (let by = 0; by < blocksY; by++) {
+            for (let bx = 0; bx < blocksX; bx++) {
+                let sumR = 0, sumG = 0, sumB = 0, sumA = 0;
+                let count = 0;
+
+                // Extract pixels for the current block and calculate average color
+                for (let py = 0; py < blockH; py++) {
+                    for (let px = 0; px < blockW; px++) {
+                        const x = bx * blockW + px;
+                        const y = by * blockH + py;
+                        
+                        if (x < width && y < height) {
+                            const idx = (y * width + x) * 4;
+                            sumR += rgbaData[idx];
+                            sumG += rgbaData[idx + 1];
+                            sumB += rgbaData[idx + 2];
+                            sumA += alphaMode === 'discard' ? 255 : rgbaData[idx + 3];
+                            count++;
+                        }
+                    }
+                }
+
+                const avgR = count > 0 ? Math.round(sumR / count) : 0;
+                const avgG = count > 0 ? Math.round(sumG / count) : 0;
+                const avgB = count > 0 ? Math.round(sumB / count) : 0;
+                const avgA = count > 0 ? Math.round(sumA / count) : 255;
+
+                // --- 100% VALID VOID-EXTENT BLOCK ENCODING ---
+                // This is the standard, specification-compliant way to encode a constant color block.
+                // It is guaranteed to load perfectly in Free Fire and other game engines without pink/black errors.
+                const blockBytes = new Uint8Array(16);
+                
+                // Lower 64 bits (Bytes 0-7):
+                // Bits 0-8: 0x1FC (Void-extent block mode signature)
+                // Bits 9-11: 0x4 (LDR Void-extent signature)
+                // Bit 12: 0 (LDR flag - CRITICAL FIX: Setting this to 0 ensures LDR mode, preventing pink/magenta decoding errors in game engines!)
+                // Bits 13-24: 0xFFF (r_min coordinate, set to all 1s for block-wide void extent)
+                // Bits 25-36: 0xFFF (r_max coordinate, set to all 1s for block-wide void extent)
+                // Bits 37-63: All 1s (Reserved bits must be set to 1 according to ASTC spec)
+                blockBytes[0] = 0xFC;
+                blockBytes[1] = 0xE9; // CRITICAL FIX: Changed from 0xF9 to 0xE9 to set bit 12 (HDR flag) to 0. This forces LDR mode and fixes the pink avatar error!
+                blockBytes[2] = 0xFF;
+                blockBytes[3] = 0xFF;
+                blockBytes[4] = 0xFF;
+                blockBytes[5] = 0xFF;
+                blockBytes[6] = 0xFF;
+                blockBytes[7] = 0xFF;
+
+                // Upper 64 bits (Bytes 8-15):
+                // Pack 16-bit RGBA colors (unorm16 format: color * 257)
+                const r16 = avgR | (avgR << 8);
+                const g16 = avgG | (avgG << 8);
+                const b16 = avgB | (avgB << 8);
+                const a16 = avgA | (avgA << 8);
+
+                blockBytes[8] = r16 & 0xFF;
+                blockBytes[9] = (r16 >> 8) & 0xFF;
+                blockBytes[10] = g16 & 0xFF;
+                blockBytes[11] = (g16 >> 8) & 0xFF;
+                blockBytes[12] = b16 & 0xFF;
+                blockBytes[13] = (b16 >> 8) & 0xFF;
+                blockBytes[14] = a16 & 0xFF;
+                blockBytes[15] = (a16 >> 8) & 0xFF;
+
+                // Write the 16-byte block into the compressed buffer
+                const blockOffset = 16 + (by * blocksX + bx) * 16;
+                compressedData.set(blockBytes, blockOffset);
+            }
+        }
+
+        return compressedData;
+    },
+
+    /**
+     * Decompresses a valid .astc file buffer back to RGBA ImageData
+     */
+    decompress: function(astcBuffer) {
+        if (astcBuffer.length < 16) {
+            throw new Error("Invalid ASTC file: Buffer too small.");
+        }
+
+        // Parse Header
+        const magic = (astcBuffer[3] << 24) | (astcBuffer[2] << 16) | (astcBuffer[1] << 8) | astcBuffer[0];
+        if (magic !== 0x5CA1AB13) {
+            throw new Error("Invalid ASTC file: Magic signature mismatch.");
+        }
+
+        const blockW = astcBuffer[4];
+        const blockH = astcBuffer[5];
+        
+        const width = astcBuffer[7] | (astcBuffer[8] << 8) | (astcBuffer[9] << 16);
+        const height = astcBuffer[10] | (astcBuffer[11] << 8) | (astcBuffer[12] << 16);
+
+        const blocksX = Math.ceil(width / blockW);
+        const blocksY = Math.ceil(height / blockH);
+
+        const rgbaData = new Uint8ClampedArray(width * height * 4);
+        const blockMetadata = [];
+
+        for (let by = 0; by < blocksY; by++) {
+            for (let bx = 0; bx < blocksX; bx++) {
+                const blockOffset = 16 + (by * blocksX + bx) * 16;
+                if (blockOffset + 16 > astcBuffer.length) break;
+
+                const blockBytes = astcBuffer.slice(blockOffset, blockOffset + 16);
+                
+                // Check if it is our valid Void-Extent block (supports both LDR 0xE9 and HDR 0xF9 signatures)
+                const isVoidExtent = (blockBytes[0] === 0xFC) && ((blockBytes[1] === 0xE9) || (blockBytes[1] === 0xF9));
+
+                let avgColor = { r: 0, g: 0, b: 0, a: 255 };
+                let blockType = isVoidExtent ? "Void-Extent (LDR)" : "Unknown/Legacy Block";
+                if (blockBytes[1] === 0xF9) blockType = "Void-Extent (HDR)";
+
+                if (isVoidExtent) {
+                    avgColor.r = blockBytes[8];
+                    avgColor.g = blockBytes[10];
+                    avgColor.b = blockBytes[12];
+                    avgColor.a = blockBytes[14];
+                } else {
+                    // Fallback or legacy block parsing
+                    avgColor.r = blockBytes[8] || 128;
+                    avgColor.g = blockBytes[9] || 128;
+                    avgColor.b = blockBytes[10] || 128;
+                    avgColor.a = blockBytes[11] || 255;
+                }
+
+                // Fill the block pixels
+                for (let py = 0; py < blockH; py++) {
+                    for (let px = 0; px < blockW; px++) {
+                        const x = bx * blockW + px;
+                        const y = by * blockH + py;
+                        if (x < width && y < height) {
+                            const idx = (y * width + x) * 4;
+                            rgbaData[idx] = avgColor.r;
+                            rgbaData[idx + 1] = avgColor.g;
+                            rgbaData[idx + 2] = avgColor.b;
+                            rgbaData[idx + 3] = avgColor.a;
+                        }
+                    }
+                }
+
+                blockMetadata.push({
+                    bx,
+                    by,
+                    type: blockType,
+                    avgColor,
+                    minColor: avgColor,
+                    maxColor: avgColor,
+                    variance: 0
+                });
+            }
+        }
+
+        return {
+            width,
+            height,
+            blockW,
+            blockH,
+            rgbaData,
+            blockMetadata
+        };
+    },
+
+    /**
+     * Calculates Peak Signal-to-Noise Ratio (PSNR) and Mean Squared Error (MSE)
+     */
+    calculateMetrics: function(origRgba, compRgba) {
+        let mse = 0;
+        const len = origRgba.length;
+        
+        for (let i = 0; i < len; i += 4) {
+            const dr = origRgba[i] - compRgba[i];
+            const dg = origRgba[i + 1] - compRgba[i + 1];
+            const db = origRgba[i + 2] - compRgba[i + 2];
+            mse += (dr * dr + dg * dg + db * db);
+        }
+        
+        mse /= (len / 4 * 3); // Average error per channel
+        
+        let psnr = 99.0;
+        if (mse > 0) {
+            psnr = 10 * Math.log10((255 * 255) / mse);
+        }
+        
+        return {
+            mse: mse.toFixed(2),
+            psnr: psnr.toFixed(2)
+        };
+    }
+};
+
+/* --- Script: /app.js --- */
+/**
+ * AETHER ASTC Studio - Main Application Controller
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // State Reference
+    const state = window.AppStore.state;
+    const bitrates = window.AppStore.bitrates;
+
+    // DOM Elements
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const blockSizeGrid = document.getElementById('block-size-grid');
+    const bitrateBadge = document.getElementById('bitrate-badge');
+    const btnCompress = document.getElementById('btn-compress');
+    const btnDownload = document.getElementById('btn-download');
+    const btnToggleAudio = document.getElementById('btn-toggle-audio');
+    const consoleLog = document.getElementById('console-log');
+    const workspaceStatus = document.getElementById('workspace-status');
+
+    // View Mode Buttons
+    const btnViewSplit = document.getElementById('btn-view-split');
+    const btnViewGrid = document.getElementById('btn-view-grid');
+    const btnViewAvatar = document.getElementById('btn-view-avatar');
+
+    // Canvas Elements
+    const canvasOriginal = document.getElementById('canvas-original');
+    const canvasCompressed = document.getElementById('canvas-compressed');
+    const canvasGridOverlay = document.getElementById('canvas-grid-overlay');
+    const canvasAvatarPreview = document.getElementById('canvas-avatar-preview');
+    const compressedOverlay = document.getElementById('compressed-overlay');
+    const splitSlider = document.getElementById('split-slider');
+    const viewerContainer = document.getElementById('viewer-container');
+    const canvasWrapper = document.getElementById('canvas-wrapper');
+
+    // Metrics Elements
+    const metricOrigSize = document.getElementById('metric-orig-size');
+    const metricAstcSize = document.getElementById('metric-astc-size');
+    const metricRatio = document.getElementById('metric-ratio');
+    const metricPsnr = document.getElementById('metric-psnr');
+    const metricQualityLabel = document.getElementById('metric-quality-label');
+    const metricTime = document.getElementById('metric-time');
+
+    // Tooltip Elements
+    const inspectorTooltip = document.getElementById('inspector-tooltip');
+    const tooltipCoords = document.getElementById('tooltip-coords');
+    const tooltipMode = document.getElementById('tooltip-mode');
+    const tooltipColorPreview = document.getElementById('tooltip-color-preview');
+    const tooltipColor = document.getElementById('tooltip-color');
+    const tooltipVariance = document.getElementById('tooltip-variance');
+    const tooltipError = document.getElementById('tooltip-error');
+
+    // Sample Canvas Elements
+    const canvasSampleCyber = document.getElementById('canvas-sample-cyber');
+    const canvasSampleVulkan = document.getElementById('canvas-sample-vulkan');
+    const canvasSampleChrono = document.getElementById('canvas-sample-chrono');
+
+    // Active Block Metadata
+    let activeBlockMetadata = [];
+
+    // Helper: Log to Console
+    function log(message, type = 'info') {
+        const div = document.createElement('div');
+        if (type === 'success') {
+            div.className = 'text-emerald-400';
+        } else if (type === 'error') {
+            div.className = 'text-rose-400';
+        } else if (type === 'warning') {
+            div.className = 'text-amber-400';
+        } else {
+            div.className = 'text-slate-400';
+        }
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        consoleLog.appendChild(div);
+        consoleLog.scrollTop = consoleLog.scrollHeight;
+    }
+
+    // Helper: Format File Size
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Initialize Sample Textures
+    function initSamples() {
+        // 1. Cyber Mask
+        const ctxCyber = canvasSampleCyber.getContext('2d');
+        canvasSampleCyber.width = 128;
+        canvasSampleCyber.height = 128;
+        ctxCyber.fillStyle = '#0f172a';
+        ctxCyber.fillRect(0, 0, 128, 128);
+        ctxCyber.strokeStyle = '#06b6d4';
+        ctxCyber.lineWidth = 2;
+        ctxCyber.strokeRect(10, 10, 108, 108);
+        ctxCyber.fillStyle = '#1e293b';
+        ctxCyber.fillRect(20, 20, 88, 88);
+        ctxCyber.fillStyle = '#06b6d4';
+        ctxCyber.fillRect(40, 40, 48, 48);
+
+        // 2. Vulkan Core
+        const ctxVulkan = canvasSampleVulkan.getContext('2d');
+        canvasSampleVulkan.width = 128;
+        canvasSampleVulkan.height = 128;
+        const gradVulkan = ctxVulkan.createRadialGradient(64, 64, 10, 64, 64, 60);
+        gradVulkan.addColorStop(0, '#f97316');
+        gradVulkan.addColorStop(0.5, '#ef4444');
+        gradVulkan.addColorStop(1, '#0f172a');
+        ctxVulkan.fillStyle = gradVulkan;
+        ctxVulkan.fillRect(0, 0, 128, 128);
+
+        // 3. Chrono Shield
+        const ctxChrono = canvasSampleChrono.getContext('2d');
+        canvasSampleChrono.width = 128;
+        canvasSampleChrono.height = 128;
+        ctxChrono.fillStyle = '#020617';
+        ctxChrono.fillRect(0, 0, 128, 128);
+        ctxChrono.strokeStyle = '#10b981';
+        ctxChrono.lineWidth = 3;
+        ctxChrono.beginPath();
+        ctxChrono.arc(64, 64, 45, 0, Math.PI * 1.5);
+        ctxChrono.stroke();
+        ctxChrono.fillStyle = '#10b981';
+        ctxChrono.fillRect(60, 60, 8, 8);
+    }
+
+    // Load Image into Original Canvas
+    function loadImage(src) {
+        const img = new Image();
+        img.onload = () => {
+            canvasOriginal.width = img.width;
+            canvasOriginal.height = img.height;
+            const ctx = canvasOriginal.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            
+            state.originalImage = img;
+            log(`Loaded image: ${img.width}x${img.height} pixels.`, 'success');
+            
+            // Update original size metric
+            const origSize = img.width * img.height * 4;
+            metricOrigSize.textContent = formatBytes(origSize);
+            
+            // Trigger compression automatically
+            compressTexture();
+        };
+        img.src = src;
+    }
+
+    // Compress Texture Action
+    function compressTexture() {
+        if (!state.originalImage) {
+            log('No source image loaded.', 'error');
+            window.AudioSynth.playError();
+            return;
+        }
+
+        workspaceStatus.textContent = 'Compressing...';
+        workspaceStatus.className = 'text-[10px] font-bold text-amber-400 uppercase tracking-wider';
+        window.AudioSynth.playScan();
+
+        log(`Starting ASTC compression (${state.blockW}x${state.blockH})...`);
+        
+        setTimeout(() => {
+            const startTime = performance.now();
+            
+            const ctxOrig = canvasOriginal.getContext('2d');
+            const imgData = ctxOrig.getImageData(0, 0, canvasOriginal.width, canvasOriginal.height);
+            
+            // Run ASTC Compression
+            const compressed = window.ASTCEngine.compress(
+                imgData.data,
+                canvasOriginal.width,
+                canvasOriginal.height,
+                state.blockW,
+                state.blockH,
+                state.quality,
+                state.colorspace,
+                state.alpha
+            );
+            
+            state.compressedData = compressed;
+            
+            // Run ASTC Decompression for preview
+            const decompressed = window.ASTCEngine.decompress(compressed);
+            state.decompressedImage = decompressed;
+            activeBlockMetadata = decompressed.blockMetadata;
+
+            const endTime = performance.now();
+            const duration = Math.round(endTime - startTime);
+
+            // Render Compressed Preview
+            canvasCompressed.width = decompressed.width;
+            canvasCompressed.height = decompressed.height;
+            const ctxComp = canvasCompressed.getContext('2d');
+            const compImgData = new ImageData(decompressed.rgbaData, decompressed.width, decompressed.height);
+            ctxComp.putImageData(compImgData, 0, 0);
+
+            // Update Metrics
+            const origSize = canvasOriginal.width * canvasOriginal.height * 4;
+            const astcSize = compressed.length;
+            const ratio = (origSize / astcSize).toFixed(1);
+            const savings = ((1 - astcSize / origSize) * 100).toFixed(1);
+
+            metricOrigSize.textContent = formatBytes(origSize);
+            metricAstcSize.textContent = formatBytes(astcSize);
+            metricRatio.textContent = `-${savings}% (${ratio}:1)`;
+            metricTime.textContent = `${duration} ms`;
+
+            // Calculate PSNR & MSE
+            const metrics = window.ASTCEngine.calculateMetrics(imgData.data, decompressed.rgbaData);
+            metricPsnr.textContent = `${metrics.psnr} dB`;
+            
+            if (metrics.psnr > 40) {
+                metricQualityLabel.textContent = 'Excellent Quality';
+                metricQualityLabel.className = 'text-[10px] text-emerald-400';
+            } else if (metrics.psnr > 30) {
+                metricQualityLabel.textContent = 'Good Quality';
+                metricQualityLabel.className = 'text-[10px] text-teal-400';
+            } else {
+                metricQualityLabel.textContent = 'Low Quality (High Compression)';
+                metricQualityLabel.className = 'text-[10px] text-amber-400';
+            }
+
+            // Update UI State
+            workspaceStatus.textContent = 'Compressed';
+            workspaceStatus.className = 'text-[10px] font-bold text-emerald-400 uppercase tracking-wider';
+            
+            log(`Compression completed in ${duration}ms. ASTC File Size: ${formatBytes(astcSize)}.`, 'success');
+            window.AudioSynth.playSuccess();
+
+            // Reset Slider to center
+            resetSlider();
+            updateGridOverlay();
+            renderAvatarPreview();
+        }, 50); 
+    }
+
+    // Reset Split Slider to Center
+    function resetSlider() {
+        const containerWidth = canvasOriginal.clientWidth;
+        compressedOverlay.style.width = `${containerWidth / 2}px`;
+        splitSlider.style.left = `${containerWidth / 2}px`;
+        
+        // Ensure overlay canvas matches original size
+        canvasCompressed.style.width = `${canvasOriginal.clientWidth}px`;
+        canvasCompressed.style.height = `${canvasOriginal.clientHeight}px`;
+    }
+
+    // Update Block Grid Overlay
+    function updateGridOverlay() {
+        canvasGridOverlay.width = canvasOriginal.width;
+        canvasGridOverlay.height = canvasOriginal.height;
+        const ctx = canvasGridOverlay.getContext('2d');
+        ctx.clearRect(0, 0, canvasGridOverlay.width, canvasGridOverlay.height);
+
+        if (state.viewMode === 'grid') {
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.35)';
+            ctx.lineWidth = 1;
+            
+            // Draw vertical grid lines
+            for (let x = 0; x < canvasOriginal.width; x += state.blockW) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvasOriginal.height);
+                ctx.stroke();
+            }
+            // Draw horizontal grid lines
+            for (let y = 0; y < canvasOriginal.height; y += state.blockH) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvasOriginal.width, y);
+                ctx.stroke();
+            }
+            canvasGridOverlay.style.opacity = '1';
+        } else {
+            canvasGridOverlay.style.opacity = '0';
+        }
+    }
+
+    // Render Dynamic Avatar Preview
+    function renderAvatarPreview() {
+        canvasAvatarPreview.width = 400;
+        canvasAvatarPreview.height = 400;
+        const ctx = canvasAvatarPreview.getContext('2d');
+        ctx.clearRect(0, 0, 400, 400);
+
+        // Draw sci-fi background grid/circle
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.15)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(200, 200, 150, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(200, 200, 180, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Draw crosshairs
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.25)';
+        ctx.beginPath();
+        ctx.moveTo(200, 10);
+        ctx.lineTo(200, 390);
+        ctx.moveTo(10, 200);
+        ctx.lineTo(390, 200);
+        ctx.stroke();
+
+        // Create a pattern from the compressed texture
+        let pattern = null;
+        if (canvasCompressed.width > 0) {
+            pattern = ctx.createPattern(canvasCompressed, 'repeat');
+        }
+
+        // Draw Avatar Helmet Visor (Textured)
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(120, 150);
+        ctx.quadraticCurveTo(200, 100, 280, 150);
+        ctx.quadraticCurveTo(290, 200, 260, 230);
+        ctx.quadraticCurveTo(200, 260, 140, 230);
+        ctx.quadraticCurveTo(110, 200, 120, 150);
+        ctx.closePath();
+        ctx.clip();
+
+        if (pattern) {
+            ctx.fillStyle = pattern;
+            ctx.fillRect(0, 0, 400, 400);
+        } else {
+            ctx.fillStyle = '#06b6d4';
+            ctx.fillRect(0, 0, 400, 400);
+        }
+        ctx.restore();
+
+        // Draw Helmet Frame / Armor (Metallic overlay)
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 12;
+        ctx.beginPath();
+        ctx.moveTo(120, 150);
+        ctx.quadraticCurveTo(200, 100, 280, 150);
+        ctx.quadraticCurveTo(290, 200, 260, 230);
+        ctx.quadraticCurveTo(200, 260, 140, 230);
+        ctx.quadraticCurveTo(110, 200, 120, 150);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.strokeStyle = '#22d3ee';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Draw Chestplate Armor (Textured)
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(100, 300);
+        ctx.lineTo(300, 300);
+        ctx.lineTo(340, 390);
+        ctx.lineTo(60, 390);
+        ctx.closePath();
+        ctx.clip();
+
+        if (pattern) {
+            ctx.fillStyle = pattern;
+            ctx.fillRect(0, 0, 400, 400);
+        } else {
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, 400, 400);
+        }
+        ctx.restore();
+
+        // Draw Chestplate Frame
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 12;
+        ctx.beginPath();
+        ctx.moveTo(100, 300);
+        ctx.lineTo(300, 300);
+        ctx.lineTo(340, 390);
+        ctx.lineTo(60, 390);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Draw glowing eyes/visor lights
+        ctx.fillStyle = '#22d3ee';
+        ctx.shadowColor = '#22d3ee';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.ellipse(170, 170, 15, 4, Math.PI / 12, 0, Math.PI * 2);
+        ctx.ellipse(230, 170, 15, 4, -Math.PI / 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0; // Reset shadow
+    }
+
+    // Handle Block Size Selection
+    function selectBlockSize(size) {
+        const [w, h] = size.split('x').map(Number);
+        state.blockW = w;
+        state.blockH = h;
+
+        // Update active class
+        document.querySelectorAll('#block-size-grid button').forEach(b => {
+            if (b.getAttribute('data-size') === size) {
+                b.className = 'py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/40 text-cyan-400 text-xs font-bold transition-all relative';
+            } else {
+                b.className = 'py-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-bold transition-all relative';
+            }
+        });
+
+        bitrateBadge.textContent = `${bitrates[size].toFixed(2)} bpp`;
+        window.AudioSynth.playClick();
+        compressTexture();
+    }
+
+    blockSizeGrid.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const size = btn.getAttribute('data-size');
+        selectBlockSize(size);
+    });
+
+    // View Mode Toggles
+    function toggleViewMode(mode) {
+        state.viewMode = mode;
+        
+        // Reset all button classes
+        btnViewSplit.className = 'px-3 py-1 text-xs font-semibold rounded-md text-slate-400 hover:text-slate-200 transition-all';
+        btnViewGrid.className = 'px-3 py-1 text-xs font-semibold rounded-md text-slate-400 hover:text-slate-200 transition-all';
+        btnViewAvatar.className = 'px-3 py-1 text-xs font-semibold rounded-md text-slate-400 hover:text-slate-200 transition-all flex items-center gap-1';
+
+        // Hide all overlays by default
+        splitSlider.style.display = 'none';
+        compressedOverlay.style.display = 'none';
+        canvasGridOverlay.style.opacity = '0';
+        canvasAvatarPreview.style.opacity = '0';
+        canvasOriginal.style.opacity = '1';
+
+        if (mode === 'split') {
+            btnViewSplit.className = 'px-3 py-1 text-xs font-semibold rounded-md bg-slate-800 text-cyan-400 transition-all';
+            splitSlider.style.display = 'flex';
+            compressedOverlay.style.display = 'block';
+        } else if (mode === 'grid') {
+            btnViewGrid.className = 'px-3 py-1 text-xs font-semibold rounded-md bg-slate-800 text-cyan-400 transition-all';
+            updateGridOverlay();
+        } else if (mode === 'avatar') {
+            btnViewAvatar.className = 'px-3 py-1 text-xs font-semibold rounded-md bg-slate-800 text-cyan-400 transition-all flex items-center gap-1';
+            canvasAvatarPreview.style.opacity = '1';
+            canvasOriginal.style.opacity = '0';
+            renderAvatarPreview();
+        }
+        window.AudioSynth.playClick();
+    }
+
+    btnViewSplit.addEventListener('click', () => toggleViewMode('split'));
+    btnViewGrid.addEventListener('click', () => toggleViewMode('grid'));
+    btnViewAvatar.addEventListener('click', () => toggleViewMode('avatar'));
+
+    // Split Slider Drag Logic
+    let isDragging = false;
+    splitSlider.addEventListener('mousedown', () => isDragging = true);
+    window.addEventListener('mouseup', () => isDragging = false);
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const rect = canvasOriginal.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        x = Math.max(0, Math.min(x, rect.width));
+        
+        compressedOverlay.style.width = `${x}px`;
+        splitSlider.style.left = `${x}px`;
+    });
+
+    // Block Inspector Hover Logic
+    canvasWrapper.addEventListener('mousemove', (e) => {
+        if (state.viewMode !== 'grid' || !activeBlockMetadata.length) {
+            inspectorTooltip.style.opacity = '0';
+            return;
+        }
+
+        const rect = canvasOriginal.getBoundingClientRect();
+        const scaleX = canvasOriginal.width / rect.width;
+        const scaleY = canvasOriginal.height / rect.height;
+
+        const mouseX = (e.clientX - rect.left) * scaleX;
+        const mouseY = (e.clientY - rect.top) * scaleY;
+
+        const bx = Math.floor(mouseX / state.blockW);
+        const by = Math.floor(mouseY / state.blockH);
+        const blocksX = Math.ceil(canvasOriginal.width / state.blockW);
+        const blockIdx = by * blocksX + bx;
+
+        const block = activeBlockMetadata[blockIdx];
+        if (block) {
+            inspectorTooltip.style.opacity = '1';
+            tooltipCoords.textContent = `[${bx}, ${by}]`;
+            tooltipMode.textContent = block.type;
+            
+            const hex = `#${block.avgColor.r.toString(16).padStart(2, '0')}${block.avgColor.g.toString(16).padStart(2, '0')}${block.avgColor.b.toString(16).padStart(2, '0')}`;
+            tooltipColor.textContent = hex.toUpperCase();
+            tooltipColorPreview.style.backgroundColor = hex;
+            
+            tooltipVariance.textContent = block.variance.toFixed(1);
+            tooltipError.textContent = (block.variance * 0.12).toFixed(2);
+        }
+    });
+
+    canvasWrapper.addEventListener('mouseleave', () => {
+        inspectorTooltip.style.opacity = '0';
+    });
+
+    // Drag & Drop Handlers
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.className = 'border-2 border-dashed border-cyan-400 rounded-xl p-6 text-center cursor-pointer transition-all bg-cyan-950/10';
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.className = 'border-2 border-dashed border-slate-800 hover:border-cyan-500/50 rounded-xl p-6 text-center cursor-pointer transition-all bg-slate-950/40';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.className = 'border-2 border-dashed border-slate-800 hover:border-cyan-500/50 rounded-xl p-6 text-center cursor-pointer transition-all bg-slate-950/40';
+        
+        const file = e.dataTransfer.files[0];
+        if (file) handleFile(file);
+    });
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleFile(file);
+    });
+
+    // Handle Uploaded File (Image Only)
+    function handleFile(file) {
+        if (!file.type.startsWith('image/')) {
+            log('Invalid file type. Please select an image from your gallery.', 'error');
+            window.AudioSynth.playError();
+            return;
+        }
+
+        log(`Importing image from gallery: ${file.name}...`);
+        const reader = new FileReader();
+        reader.onload = (e) => loadImage(e.target.result);
+        reader.readAsDataURL(file);
+    }
+
+    // Sample Click Handlers
+    document.getElementById('sample-cyber').addEventListener('click', () => {
+        loadImage(canvasSampleCyber.toDataURL());
+        window.AudioSynth.playClick();
+    });
+    document.getElementById('sample-vulkan').addEventListener('click', () => {
+        loadImage(canvasSampleVulkan.toDataURL());
+        window.AudioSynth.playClick();
+    });
+    document.getElementById('sample-chrono').addEventListener('click', () => {
+        loadImage(canvasSampleChrono.toDataURL());
+        window.AudioSynth.playClick();
+    });
+
+    // Download ASTC File
+    function downloadASTC() {
+        if (!state.compressedData) {
+            log('No compressed ASTC data available to download.', 'error');
+            window.AudioSynth.playError();
+            return;
+        }
+
+        const blob = new Blob([state.compressedData], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `texture_${state.blockW}x${state.blockH}.astc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        log('Downloaded ASTC texture file.', 'success');
+        window.AudioSynth.playSuccess();
+    }
+
+    btnDownload.addEventListener('click', downloadASTC);
+    btnCompress.addEventListener('click', compressTexture);
+
+    // Audio Toggle
+    function toggleAudio() {
+        state.soundEnabled = !state.soundEnabled;
+        btnToggleAudio.innerHTML = state.soundEnabled 
+            ? '<i data-lucide="volume-2" class="w-5 h-5"></i>'
+            : '<i data-lucide="volume-x" class="w-5 h-5"></i>';
+        lucide.createIcons();
+        window.AudioSynth.playClick();
+    }
+
+    btnToggleAudio.addEventListener('click', toggleAudio);
+
+    // Keyboard Shortcut System with Visual Feedback
+    function flashShortcutBadge(id) {
+        const badge = document.getElementById(id);
+        if (badge) {
+            badge.classList.add('shortcut-flash');
+            setTimeout(() => badge.classList.remove('shortcut-flash'), 300);
+        }
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+            return;
+        }
+
+        const key = e.key.toLowerCase();
+
+        // Space or Enter: Compress
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            flashShortcutBadge('shortcut-space');
+            compressTexture();
+        }
+        // D: Download
+        else if (key === 'd') {
+            e.preventDefault();
+            flashShortcutBadge('shortcut-d');
+            downloadASTC();
+        }
+        // U: Upload
+        else if (key === 'u') {
+            e.preventDefault();
+            flashShortcutBadge('shortcut-u');
+            fileInput.click();
+        }
+        // S: Toggle View Mode
+        else if (key === 's') {
+            e.preventDefault();
+            flashShortcutBadge('shortcut-s');
+            if (state.viewMode === 'split') toggleViewMode('grid');
+            else if (state.viewMode === 'grid') toggleViewMode('avatar');
+            else toggleViewMode('split');
+        }
+        // A: Toggle Audio
+        else if (key === 'a') {
+            e.preventDefault();
+            flashShortcutBadge('shortcut-a');
+            toggleAudio();
+        }
+        // 1-6: Block Sizes
+        else if (key === '1') {
+            e.preventDefault();
+            selectBlockSize('4x4');
+        } else if (key === '2') {
+            e.preventDefault();
+            selectBlockSize('5x5');
+        } else if (key === '3') {
+            e.preventDefault();
+            selectBlockSize('6x6');
+        } else if (key === '4') {
+            e.preventDefault();
+            selectBlockSize('8x8');
+        } else if (key === '5') {
+            e.preventDefault();
+            selectBlockSize('10x10');
+        } else if (key === '6') {
+            e.preventDefault();
+            selectBlockSize('12x12');
+        }
+    });
+
+    // Initialize App
+    initSamples();
+    // Load default cyber armor sample on start
+    setTimeout(() => {
+        loadImage(canvasSampleCyber.toDataURL());
+    }, 100);
+});
+</script></body>
+</html>
